@@ -214,7 +214,7 @@ static int do_http_request(struct tunnel *tunnel, const char *method,
 	int ret;
 	char *template = ("%s %s HTTP/1.1\r\n"
 	                  "Host: %s:%d\r\n"
-	                  "User-Agent: Mozilla/5.0 SV1\r\n"
+	                  "User-Agent: Mozilla/5.0\r\n"
 	                  "Accept: text/plain\r\n"
 	                  "Accept-Encoding: identify\r\n"
 	                  "Content-Type: application/x-www-form-urlencoded\r\n"
@@ -355,7 +355,8 @@ int auth_log_in(struct tunnel *tunnel)
 	if (ret != 1)
 		goto end;
 
-	if (strncmp(res, "HTTP/1.1 200 OK\r\n", 17)) {
+	if (strncmp(res, "HTTP/1.1 200 OK\r\n", 17) &&
+	    strncmp(res, "HTTP/1.1 401 Authorization Required\r\n", 37)) {
 		ret = ERR_HTTP_BAD_RES_CODE;
 		goto end;
 	}
@@ -373,7 +374,7 @@ int auth_log_in(struct tunnel *tunnel)
 		 * rejected.
 		 */
 
-		ret = get_value_from_response(res, "tokeninfo=", token, 128);
+		ret = get_value_from_response(res, "magic=", token, 128);
 		if (ret != 1) {
 			// No SVPNCOOKIE and no tokeninfo, return error.
 			ret = ERR_HTTP_NO_COOKIE;
